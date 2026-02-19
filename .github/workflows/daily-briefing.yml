@@ -1,0 +1,48 @@
+name: Daily Briefing
+
+on:
+  schedule:
+    # 매일 오전 8시 (KST = UTC+9, 즉 UTC 23:00 전날)
+    - cron: "0 23 * * *"
+  workflow_dispatch:  # 수동 실행 버튼
+
+jobs:
+  briefing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run briefing (demo mode for CI)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+          TELEGRAM_PHONE: ${{ secrets.TELEGRAM_PHONE }}
+          TELEGRAM_CHANNELS: ${{ secrets.TELEGRAM_CHANNELS }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_PAGE_ID: ${{ secrets.NOTION_PAGE_ID }}
+        run: |
+          # Telegram session 파일이 없으면 auto 모드 불가 → file 모드 사용
+          # 실제 운영 시 session 파일을 secrets에 저장하거나 서버에서 실행 권장
+          python main.py --demo
+
+      - name: Upload output artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: briefing-output-${{ github.run_number }}
+          path: output/
+          retention-days: 7

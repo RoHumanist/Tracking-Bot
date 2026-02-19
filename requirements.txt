@@ -1,0 +1,9 @@
+# 필수
+anthropic>=0.34.0
+requests>=2.31.0
+
+# 텔레그램 자동 수집 (--auto 모드에서 필요)
+telethon>=1.36.0
+
+# 선택 (더 편리한 .env 관리)
+python-dotenv>=1.0.0
